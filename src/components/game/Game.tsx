@@ -33,7 +33,7 @@ const Game: React.FC<GameProps> = ({ dispatch, layout, score, runningScore, iter
 
   useEffect(() => {
     if(iterationsLeft && iterationsLeft > 0 && mode === GameMode.FINISHED){
-      console.log("reset")
+      
       dispatch(initAutoGame());
     }
   })

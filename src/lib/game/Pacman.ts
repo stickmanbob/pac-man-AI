@@ -1,4 +1,4 @@
-import { GameBoardItemType, KeyToGameDirection, GameDirectionMap, GameDirectionToKeys, GameDirection, pillMax } from '../Map';
+import { GameBoardItemType, KeyToGameDirection, GameDirectionMap, GameDirectionToKeys, GameDirection, pillMax, GameDirectionReverseMap } from '../Map';
 import Item from './Item';
 import { sampleArray } from '../../util/arrayUtil';
 import { Key } from 'react';
@@ -67,9 +67,25 @@ class Pacman extends Item implements GameBoardItem {
     //   }
     // }
 
-    // Random movement
+    const currentDir = GameDirectionToKeys(this.direction); 
 
-    const validMoves: Array<String> = Object.keys(moves);
+    const backDir = GameDirectionReverseMap[currentDir];
+
+
+    const validMoves: Array<String> = Object.keys(moves)
+
+    const validLookDirs = validMoves.filter(dir => dir !== backDir);
+    
+    console.log(`direction: ${this.direction} backDir: ${backDir} validLookDirs: ${validLookDirs}`); 
+
+    
+
+
+    // Find closest dot and go for it
+
+    
+
+    // Random movement
 
     const nextMove: Key = sampleArray(validMoves);
 
