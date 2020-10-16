@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { makeStyles, Theme } from '@material-ui/core/styles';
 import { Grid } from '@material-ui/core';
-import { initGame, tic } from '../../redux/actions';
+import { initAutoGame, tic } from '../../redux/actions';
 import GameBoard from './Board';
 import { GameMode } from '../../lib/Map';
 import Controls from './Controls';
@@ -34,7 +34,7 @@ const Game: React.FC<GameProps> = ({ dispatch, layout, score, runningScore, iter
   useEffect(() => {
     if(iterationsLeft && iterationsLeft > 0 && mode === GameMode.FINISHED){
       console.log("reset")
-      dispatch(initGame());
+      dispatch(initAutoGame());
     }
   })
   
