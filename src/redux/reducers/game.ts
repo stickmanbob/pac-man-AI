@@ -3,11 +3,11 @@ import { InitializeGame } from '../../lib/Game';
 import { GameBoardItemType, GameMode } from '../../lib/Map';
 
 /** Holds initial state */
-const initialState:GameState = {...InitializeGame(), runningScore: 0, iteration: 0};
+const initialState:GameState = {...InitializeGame(), runningScore: 0, iteration: 0,};
 
 const gameReducer = (state:GameState = initialState, action: ReduxAction): GameState => {
   const { items, GhostStore, PacmanStore, pillTimer} = state;
-  let { mode, runningScore, iteration, turn } = state;
+  let { mode, runningScore, iteration, turn, iterationsLeft } = state;
 
   let newMove; let i;
 
@@ -16,7 +16,14 @@ const gameReducer = (state:GameState = initialState, action: ReduxAction): GameS
     case ActionTypes.INIT:
       runningScore += PacmanStore.score;
       iteration = (iteration || 0) + 1;
-      return {...InitializeGame(), runningScore, iteration};
+      iterationsLeft = (iterationsLeft || 1) -1;
+      return {...InitializeGame(), runningScore, iteration, iterationsLeft};
+    
+    case ActionTypes.AUTO:
+      runningScore += PacmanStore.score;
+      iteration = (iteration || 0) + 1;
+      iterationsLeft = 100; 
+      return {...InitializeGame(), runningScore, iteration, iterationsLeft}
 
     case ActionTypes.RESET:
       runningScore = 0;

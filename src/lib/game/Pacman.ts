@@ -109,7 +109,7 @@ class Pacman extends Item implements GameBoardItem {
 
     this.setPiece(piece, direction);
     this.items[piece.y][piece.x] = this;
-    console.log(this.items);
+    
   }
 
 }
