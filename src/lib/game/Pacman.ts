@@ -1,5 +1,7 @@
 import { GameBoardItemType, KeyToGameDirection, GameDirectionMap, GameDirectionToKeys, GameDirection, pillMax } from '../Map';
 import Item from './Item';
+import { sampleArray } from '../../util/arrayUtil';
+import { Key } from 'react';
 
 class Pacman extends Item implements GameBoardItem {
 
@@ -33,6 +35,7 @@ class Pacman extends Item implements GameBoardItem {
     }
 
   }
+
   
   /**
    * Returns the next move from the keyboard input
@@ -46,25 +49,37 @@ class Pacman extends Item implements GameBoardItem {
 
     let move: GameBoardItemMove | false = false;
 
-    // If there is a keyboard move, use it and clear it
-    if (this.desiredMove) {    
-      if (moves[this.desiredMove]) {
-        move = {piece: moves[this.desiredMove], direction: GameDirectionMap[this.desiredMove]};
-        this.desiredMove = false;
-      }
-    }
+    // // If there is a keyboard move, use it and clear it
+    // if (this.desiredMove) {    
+    //   if (moves[this.desiredMove]) {
+    //     move = {piece: moves[this.desiredMove], direction: GameDirectionMap[this.desiredMove]};
+    //     this.desiredMove = false;
+    //   }
+    // }
+
+
     
-    // Otherwise, continue in the last direction
-    if (!move && this.direction !== GameDirection.NONE) {
-      const key = GameDirectionToKeys(this.direction);
-      if (moves[key]) {
-        move = {piece: moves[key], direction: this.direction};
-      }
-    }
+    // // Otherwise, continue in the last direction
+    // if (!move && this.direction !== GameDirection.NONE) {
+    //   const key = GameDirectionToKeys(this.direction);
+    //   if (moves[key]) {
+    //     move = {piece: moves[key], direction: this.direction};
+    //   }
+    // }
+
+    // Random movement
+
+    const validMoves: Array<String> = Object.keys(moves);
+
+    const nextMove: Key = sampleArray(validMoves);
+
+    move = {piece: moves[nextMove], direction: GameDirectionMap[nextMove] }; 
 
     return move;
 
   }
+
+  
 
   /**
    * Move Pacman and "eat" the item
@@ -94,6 +109,7 @@ class Pacman extends Item implements GameBoardItem {
 
     this.setPiece(piece, direction);
     this.items[piece.y][piece.x] = this;
+    console.log(this.items);
   }
 
 }
