@@ -7,6 +7,13 @@ export enum GameDirection {
   NONE = 4,
 }
 
+export enum GameDirectionKey{
+  UP = 'up',
+  DOWN = 'down',
+  LEFT = 'left',
+  RIGHT = 'right'
+}
+
 export const KeyToGameDirection:KeyToGameDirection = {
   W: 'up',
   S: 'down',
