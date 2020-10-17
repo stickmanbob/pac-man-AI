@@ -1,7 +1,8 @@
-import { GameBoardItemType, KeyToGameDirection, GameDirectionMap, GameDirectionToKeys, GameDirection, pillMax, GameDirectionReverseMap, GameBoardPieceType } from '../Map';
+import { GameBoardItemType, KeyToGameDirection, GameDirectionMap, GameDirectionToKeys, GameDirection, pillMax, GameDirectionReverseMap } from '../Map';
 import Item from './Item';
 import { sampleArray } from '../../util/arrayUtil';
 import { Key } from 'react';
+import aiConstants from './aiConstants';
 
 class Pacman extends Item implements GameBoardItem {
 
@@ -37,7 +38,7 @@ class Pacman extends Item implements GameBoardItem {
   }
 
   /**
-   * Finds closest pellet or power up and returns its direction
+   * Finds closest pellet or pill and returns its direction
    * If no pellet found, returns false
    * 
    * @method findClosestPelletDir
@@ -47,18 +48,15 @@ class Pacman extends Item implements GameBoardItem {
 
   findClosestPelletDir(validLookDirs: Array<string>) :string | false {
 
-    const itemsWithDistance: Array<ItemWithDistance> = [];
+    // Find closest pellets/pills
+    const itemsWithDistance: Array<ItemWithDistance> = this.findClosestItems(validLookDirs, [GameBoardItemType.BISCUIT, GameBoardItemType.PILL]);
     
-    validLookDirs.forEach((dir: string) => {
 
-      let item = this.findItemWithDistance(dir,[GameBoardItemType.BISCUIT,GameBoardItemType.PILL]);
-
-      if (item) itemsWithDistance.push(item);
-    })
-
+    // Return if none found
     if (itemsWithDistance.length === 0) return false;
     
-    itemsWithDistance.reduce((prevItem,currItem) => {
+    // Otherwise, get the closest one and return its direction 
+    let closestPellet = itemsWithDistance.reduce((prevItem,currItem) => {
       if(currItem.distance < prevItem.distance){
         return currItem;
       } else{
@@ -66,7 +64,57 @@ class Pacman extends Item implements GameBoardItem {
       }
     });
 
-    return sampleArray(itemsWithDistance).direction; 
+    return closestPellet.direction; 
+  }
+
+  /**
+   * Find all ghosts that are close enough to be a threat. If none, return false
+   * 
+   * @method detectThreats
+   * @param {Array<string>} validLookDirs
+   * @returns {Array<ItemWithDistance> | false} // All ghosts that are imminently threatening
+   */
+
+  detectThreats(validLookDirs: Array<string>): Array<ItemWithDistance> | false {
+
+    // Find closest ghosts, if any
+    const ghostsWithDistance: Array<ItemWithDistance> = this.findClosestItems(validLookDirs, [GameBoardItemType.GHOST]);
+
+    // Return false if none found
+    if(ghostsWithDistance.length === 0) return false;
+
+    // Filter the ghosts that are too far away to be a threat
+    const imminentThreats = ghostsWithDistance.filter( (ghost) => ghost.distance <= aiConstants.evasionRadius);
+
+    return imminentThreats; 
+    
+  }
+
+  /**
+   * Find a safe direction given a list of threats and valid move directions
+   * If no direction is safe, pick a random one
+   * 
+   * @param {Array <ItemWithDistance>} imminentThreats 
+   * @param {Array<string>} validMoves 
+   * @returns {string} // safe direction
+   */
+
+  getSafeDir(imminentThreats: Array<ItemWithDistance>, validMoves: Array<string>): string {
+
+    // find any open moves
+    // pick the one opp the nearest ghost
+
+    let safeMoves = validMoves.filter( (moveDir) => imminentThreats.some(threat => threat.direction !== moveDir));
+
+    if(safeMoves.length === 0){
+
+      return sampleArray(validMoves);
+
+    } else {
+
+      return sampleArray(safeMoves); 
+
+    }
   }
 
   
@@ -110,10 +158,15 @@ class Pacman extends Item implements GameBoardItem {
     // Valid directions to look are everywhere but behind PacMan
     const validLookDirs: Array<string> = validMoves.filter(dir => dir !== backDir);
     
-    //Testing
-    // console.log(`direction: ${this.direction} backDir: ${backDir} validLookDirs: ${validLookDirs}`); 
+    let imminentThreats = this.detectThreats(validLookDirs);
 
-    // Find closest dot and go for it
+    if(imminentThreats){
+
+      let safeDir = this.getSafeDir(imminentThreats, validMoves);
+
+      return {piece: moves[safeDir], direction: GameDirectionMap[safeDir]}
+
+    }
 
     let closestPelletDir = this.findClosestPelletDir(validLookDirs); 
 

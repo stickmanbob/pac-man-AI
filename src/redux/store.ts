@@ -1,5 +1,9 @@
-import { createStore, applyMiddleware } from 'redux';
+import { createStore } from 'redux';
 import reducers from './reducers';
-import logger from "redux-logger"; 
+
+
+// Redux Logger (optional dev middleware)
+// import { applyMiddleware } from 'redux';
+// import logger from "redux-logger"; 
   
 export default createStore(reducers);

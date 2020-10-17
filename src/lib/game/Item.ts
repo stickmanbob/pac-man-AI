@@ -1,4 +1,5 @@
 import { GameBoardItemType, GameDirection, GameBoardPieceType } from '../Map';
+import aiConstants from './aiConstants';
 
 class Item implements GameBoardItem {
 
@@ -97,8 +98,9 @@ class Item implements GameBoardItem {
 
   /**
    * Finds the closest item in the given list of types and returns it along with
-   * the distance and direction
+   * the distance and direction. Searches one direction only. 
    * 
+   * @method findItemWithDistance
    * @param {string} directionKey 
    * @param {Array<GameBoardItemType>} typesToFind 
    * @returns {ItemWithDistance}
@@ -124,6 +126,31 @@ class Item implements GameBoardItem {
       distance +=1;
     }
     return false;
+  }
+
+  /**
+   * Finds all closest items and returns them as an array of tuples. 
+   * Each tuple contains the item, distance from start, and direction
+   * 
+   * @method findClosestItems
+   * @param directions 
+   * @param typesToFind 
+   * @returns {Array<ItemWithDistance>} 
+   */
+  
+  findClosestItems(directions: Array<string>, typesToFind: Array<GameBoardItemType> = aiConstants.itemTypes): Array<ItemWithDistance> {
+
+    const itemsWithDistance: Array<ItemWithDistance> = []; 
+
+    directions.forEach( (dir) => {
+
+      let item = this.findItemWithDistance(dir, typesToFind);
+
+      if (item) itemsWithDistance.push(item);
+
+    })
+
+    return itemsWithDistance; 
   }
 
   /** 
