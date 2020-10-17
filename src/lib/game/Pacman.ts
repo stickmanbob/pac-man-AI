@@ -37,21 +37,38 @@ class Pacman extends Item implements GameBoardItem {
   }
 
   /**
-   * Finds closest dot or power pellet and returns its direction
+   * Finds closest pellet or power up and returns its direction
+   * If no pellet found, returns false
    * 
-   * @method getClosestPellet
+   * @method findClosestPelletDir
+   * @param {Array<string>} validLookDirs //Array of directions we can search
    * @return {GameDirection}
    */
 
-  getClosestPellet(validLookDirs: Array<Key>) :GameDirection{
-    
-    validLookDirs.forEach((dir: Key) => {
+  findClosestPelletDir(validLookDirs: Array<string>) :string | false {
 
-      this.findItemWithDistance(dir,GameBoardItemType.BISCUIT)
+    const itemsWithDistance: Array<ItemWithDistance> = [];
+    
+    validLookDirs.forEach((dir: string) => {
+
+      let item = this.findItemWithDistance(dir,[GameBoardItemType.BISCUIT,GameBoardItemType.PILL]);
+
+      if (item) itemsWithDistance.push(item);
     })
 
-    return false;
+    if (itemsWithDistance.length === 0) return false;
+    
+    itemsWithDistance.reduce((prevItem,currItem) => {
+      if(currItem.distance < prevItem.distance){
+        return currItem;
+      } else{
+        return prevItem;
+      }
+    });
+
+    return sampleArray(itemsWithDistance).direction; 
   }
+
   
   /**
    * Returns the next move from the keyboard input
@@ -84,21 +101,26 @@ class Pacman extends Item implements GameBoardItem {
     // }
 
     // Get the current direction in key format and use it to get the back direction
-    const currentDir: Key = GameDirectionToKeys(this.direction); 
-    const backDir: Key = GameDirectionReverseMap[currentDir];
+    const currentDir: string = GameDirectionToKeys(this.direction); 
+    const backDir: string = GameDirectionReverseMap[currentDir];
 
     // Calculate the valid move directions availible and valid look directions
-    const validMoves: Array<Key> = Object.keys(moves)
+    const validMoves: Array<string> = Object.keys(moves)
 
     // Valid directions to look are everywhere but behind PacMan
-    const validLookDirs: Array<Key> = validMoves.filter(dir => dir !== backDir);
+    const validLookDirs: Array<string> = validMoves.filter(dir => dir !== backDir);
     
     //Testing
     // console.log(`direction: ${this.direction} backDir: ${backDir} validLookDirs: ${validLookDirs}`); 
 
     // Find closest dot and go for it
 
-    
+    let closestPelletDir = this.findClosestPelletDir(validLookDirs); 
+
+    if(closestPelletDir){
+      move = { piece: moves[closestPelletDir], direction: GameDirectionMap[closestPelletDir] }
+      return move; 
+    }
 
     // Random movement
 

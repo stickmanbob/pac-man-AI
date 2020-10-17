@@ -95,7 +95,15 @@ class Item implements GameBoardItem {
     return false;
   }
 
-  findItemWithDistance(directionKey: string, typeToFind: GameBoardItemType): ItemWithDistance | false {
+  /**
+   * Finds the closest item in the given list of types and returns it along with
+   * the distance and direction
+   * 
+   * @param {string} directionKey 
+   * @param {Array<GameBoardItemType>} typesToFind 
+   * @returns {ItemWithDistance}
+   */
+  findItemWithDistance(directionKey: string, typesToFind: Array<GameBoardItemType>): ItemWithDistance | false {
 
     let currentPiece: GameBoardPiece = this.piece.moves[directionKey];
     
@@ -107,7 +115,7 @@ class Item implements GameBoardItem {
 
       if (typeof item !== 'undefined') {
         const { type } = item;
-        if (type === typeToFind) {
+        if (typesToFind.includes(type)) {
           return {item: item, distance: distance, direction: directionKey};
         }
       }
