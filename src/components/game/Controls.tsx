@@ -31,6 +31,7 @@ const Controls: React.FC<ControlProps> = ({score, iteration,  runningScore, iter
     store.dispatch(initGame());
   };
 
+  // initialize an auto game (100 rounds)
   const handleAutogame = ():void => {
     store.dispatch(initAutoGame());
   };
@@ -38,6 +39,14 @@ const Controls: React.FC<ControlProps> = ({score, iteration,  runningScore, iter
   const handleResetScore = ():void => {
     store.dispatch(resetScore());
   };
+
+  let autoButton;
+
+  if(!iterationsLeft || iterationsLeft === 0){
+    autoButton = <Button onClick={handleAutogame} className={styles.button} fullWidth color="primary" variant="contained">Run 100 iterations</Button>;
+  } else{
+    autoButton = null;
+  }
 
   return (
     <>
@@ -60,12 +69,14 @@ const Controls: React.FC<ControlProps> = ({score, iteration,  runningScore, iter
         <Typography variant="body1">
           <b>Iterations Remaining:</b>
           {' '}
-          {iterationsLeft || 1}
+          {iterationsLeft || 0}
         </Typography>
       </div>
 
       <Button onClick={handleNewGame} className={styles.button} fullWidth color="primary" variant="contained">New Game</Button>
-      <Button onClick={handleAutogame} className={styles.button} fullWidth color="primary" variant="contained">Run 100 iterations</Button>
+
+      {autoButton}
+
       <Button onClick={handleResetScore} className={styles.button} fullWidth variant="contained">Reset Score</Button>
     </>
   );

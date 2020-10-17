@@ -28,7 +28,7 @@ const gameReducer = (state:GameState = initialState, action: ReduxAction): GameS
 
       // Initialize the number of iterations left, or decrement it if 
       // already running an auto suite
-      iterationsLeft = iterationsLeft ? iterationsLeft -1 : 100;
+      iterationsLeft = iterationsLeft ? iterationsLeft -1 : 99;
       return {...InitializeGame(), runningScore, iteration, iterationsLeft}
 
     case ActionTypes.RESET:
