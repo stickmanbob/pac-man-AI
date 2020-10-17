@@ -1,7 +1,6 @@
 import { GameBoardItemType, KeyToGameDirection, GameDirectionMap, GameDirectionToKeys, GameDirection, pillMax, GameDirectionReverseMap } from '../Map';
 import Item from './Item';
 import { sampleArray } from '../../util/arrayUtil';
-import { Key } from 'react';
 import aiConstants from './aiConstants';
 
 class Pacman extends Item implements GameBoardItem {
@@ -91,26 +90,42 @@ class Pacman extends Item implements GameBoardItem {
    * @returns {string} // safe direction
    */
 
-  getSafeDir(imminentThreats: Array<ItemWithDistance>, validMoves: Array<string>): string {
+  getSafeDir(imminentThreats: Array<ItemWithDistance>, validMoves: Array<string>, validLookDirs: Array<string>): string {
+
+    const currDirection = GameDirectionToKeys(this.direction);
 
     // Sort threats by distance
     imminentThreats.sort((threat1,threat2) => threat1.distance - threat2.distance );
+
+    // Get a list of known safe directions (where we can see and there is no ghost)
+    let safeMoves = validLookDirs.filter( dir => !imminentThreats.some(threat => threat.direction === dir));
+
+    // If no known safe moves, consider doing a 180
+
+    let blindDir:string = GameDirectionReverseMap[currDirection];
+
+    if(safeMoves.length === 0 && validMoves.includes(blindDir)){
+      safeMoves.push(blindDir);
+    }
+
+    console.log(safeMoves); 
     
     // Try to run away from threats, starting from the closest one
     imminentThreats.forEach((threat) => {
 
       let oppDir = GameDirectionReverseMap[threat.direction];
       
-      // If there is no ghost in the opposite direction, go that way
-      if( !imminentThreats.some(threat => threat.direction === oppDir) && validMoves.includes(oppDir)){
-
+      if(safeMoves.includes(oppDir)){
         return oppDir;
-      } 
+      } else {
+        return sampleArray(safeMoves); 
+      }
     })
 
-    console.log("redirect")
+    
+
     // Otherwise, go a random way
-    return sampleArray(validMoves); 
+    return this.getDefaultDir(validMoves); 
   }
 
  /**
@@ -123,8 +138,9 @@ class Pacman extends Item implements GameBoardItem {
  */
 
   getDefaultDir(validMoves: Array<string>): string{
+    let direction = GameDirectionToKeys(this.direction);
 
-    if (validMoves[this.direction]) {
+    if (validMoves.includes(direction)) {
       return GameDirectionToKeys(this.direction);
     } else {
       return sampleArray(validMoves)
@@ -142,7 +158,6 @@ class Pacman extends Item implements GameBoardItem {
   getNextMove(): GameBoardItemMove | boolean {
 
     const { moves } = this.piece;
-
     let move: GameBoardItemMove | false = false;
 
     // Get the current direction in key format and use it to get the back direction
@@ -155,14 +170,18 @@ class Pacman extends Item implements GameBoardItem {
     // Valid directions to look are everywhere but behind PacMan
     const validLookDirs: Array<string> = validMoves.filter(dir => dir !== backDir);
     
+    // Find any threats
     let imminentThreats = this.detectThreats(validLookDirs);
 
+    // If any found within evasion radius, evade
     if(imminentThreats.length > 0){
 
-      let safeDir = this.getSafeDir(imminentThreats, validMoves);
-      console.log(imminentThreats, safeDir);
+      // Find a direction to run
+      let safeDir = this.getSafeDir(imminentThreats, validMoves, validLookDirs);
+      // console.log(imminentThreats, safeDir);
+      
       move = {piece: moves[safeDir], direction: GameDirectionMap[safeDir]};
-
+      console.log("threat", move);
       return move;
 
     }
@@ -171,6 +190,7 @@ class Pacman extends Item implements GameBoardItem {
 
     if(closestPelletDir){
       move = { piece: moves[closestPelletDir], direction: GameDirectionMap[closestPelletDir] }
+      console.log("pellet",move);
       return move; 
     }
 
@@ -179,7 +199,7 @@ class Pacman extends Item implements GameBoardItem {
     const nextDir = this.getDefaultDir(validMoves);
 
     move = {piece: moves[nextDir], direction: GameDirectionMap[nextDir] }; 
-
+    console.log("default",move);
     return move;
 
   }
