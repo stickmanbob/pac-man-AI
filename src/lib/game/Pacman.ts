@@ -101,20 +101,42 @@ class Pacman extends Item implements GameBoardItem {
 
   getSafeDir(imminentThreats: Array<ItemWithDistance>, validMoves: Array<string>): string {
 
-    // find any open moves
-    // pick the one opp the nearest ghost
+    // Sort threats by distance
+    imminentThreats.sort((threat1,threat2) => threat1.distance - threat2.distance );
+    
+    // Try to run away from threats, starting from the closest one
+    imminentThreats.forEach((threat) => {
 
-    let safeMoves = validMoves.filter( (moveDir) => imminentThreats.some(threat => threat.direction !== moveDir));
+      let oppDir = GameDirectionReverseMap[threat.direction];
 
-    if(safeMoves.length === 0){
+      // If there is no ghost in the opposite direction, go that way
+      if( !imminentThreats.some(threat => threat.direction === oppDir) && validMoves.includes(oppDir)){
 
-      return sampleArray(validMoves);
+        return oppDir;
+      }
+    })
 
+    // Otherwise, go a random way
+    return sampleArray(validMoves); 
+  }
+
+ /**
+ * Find a direction to move in in absence of any other stimulus
+ * For now, pick a random direction and stay the course
+ * 
+ * @method getDefaultDir
+ * @param {Array<string>} validMoves 
+ * @returns {string} // direction to go
+ */
+
+  getDefaultDir(validMoves: Array<string>): string{
+
+    if (validMoves[this.direction]) {
+      return GameDirectionToKeys(this.direction);
     } else {
-
-      return sampleArray(safeMoves); 
-
+      return sampleArray(validMoves)
     }
+
   }
 
   
@@ -135,9 +157,10 @@ class Pacman extends Item implements GameBoardItem {
     //   if (moves[this.desiredMove]) {
     //     move = {piece: moves[this.desiredMove], direction: GameDirectionMap[this.desiredMove]};
     //     this.desiredMove = false;
+
+    //     return move; 
     //   }
     // }
-
 
     
     // // Otherwise, continue in the last direction
