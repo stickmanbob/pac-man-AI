@@ -22,13 +22,19 @@ const gameReducer = (state:GameState = initialState, action: ReduxAction): GameS
     // Handle auto cycling through 100 rounds
     case ActionTypes.AUTO:
 
-    // Same logic as INIT
-      runningScore += PacmanStore.score;
-      iteration = (iteration || 0) + 1;
+      // If there are no iterations queued, initialize 100 and reset the score
+      if(!iterationsLeft || iterationsLeft === 0){
+        // Same logic as INIT
+        runningScore = 0;
+        iteration = 1;
+        iterationsLeft = 99;
 
-      // Initialize the number of iterations left, or decrement it if 
-      // already running an auto suite
-      iterationsLeft = iterationsLeft ? iterationsLeft -1 : 99;
+      } else { // Otherwise, keep the chain going
+        runningScore += PacmanStore.score;
+        iteration = (iteration || 0) + 1;
+        iterationsLeft -=1;
+      }
+      
       return {...InitializeGame(), runningScore, iteration, iterationsLeft}
 
     case ActionTypes.RESET:
