@@ -107,11 +107,11 @@ class Pacman extends Item implements GameBoardItem {
     if(safeMoves.length === 0 && validMoves.includes(blindDir)){
       safeMoves.push(blindDir);
     }
-
-    console.log(safeMoves); 
     
     // Try to run away from threats, starting from the closest one
-    imminentThreats.forEach((threat) => {
+
+    for(let i = 0; i < imminentThreats.length; i++){
+      let threat = imminentThreats[i];
 
       let oppDir = GameDirectionReverseMap[threat.direction];
       
@@ -120,9 +120,7 @@ class Pacman extends Item implements GameBoardItem {
       } else {
         return sampleArray(safeMoves); 
       }
-    })
-
-    
+    }
 
     // Otherwise, go a random way
     return this.getDefaultDir(validMoves); 
@@ -181,7 +179,7 @@ class Pacman extends Item implements GameBoardItem {
       // console.log(imminentThreats, safeDir);
       
       move = {piece: moves[safeDir], direction: GameDirectionMap[safeDir]};
-      console.log("threat", move);
+      // console.log("threat", move);
       return move;
 
     }
@@ -190,7 +188,7 @@ class Pacman extends Item implements GameBoardItem {
 
     if(closestPelletDir){
       move = { piece: moves[closestPelletDir], direction: GameDirectionMap[closestPelletDir] }
-      console.log("pellet",move);
+      // console.log("pellet",move);
       return move; 
     }
 
@@ -199,7 +197,7 @@ class Pacman extends Item implements GameBoardItem {
     const nextDir = this.getDefaultDir(validMoves);
 
     move = {piece: moves[nextDir], direction: GameDirectionMap[nextDir] }; 
-    console.log("default",move);
+    // console.log("default",move);
     return move;
 
   }
