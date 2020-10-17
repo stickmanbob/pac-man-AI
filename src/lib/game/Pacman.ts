@@ -69,15 +69,16 @@ class Pacman extends Item implements GameBoardItem {
    * @returns {Array<ItemWithDistance> | false} // All ghosts that are imminently threatening
    */
 
-  detectThreats(validLookDirs: Array<string>): Array<ItemWithDistance>{
+  detectThreats(validLookDirs: Array<string>): Array<ItemWithDistance> | false{
 
     // Find closest ghosts, if any
     const ghostsWithDistance: Array<ItemWithDistance> = this.findClosestItems(validLookDirs, [GameBoardItemType.GHOST]);
 
-    // Filter the ghosts that are too far away to be a threat
-    const imminentThreats = ghostsWithDistance.filter( (ghost) => ghost.distance <= aiConstants.evasionRadius);
+    // If no ghosts are within evasion radius, continue as normal
+    if(!ghostsWithDistance.some(ghost => ghost.distance <= aiConstants.evasionRadius)) return false;
 
-    return imminentThreats; 
+    // Otherwise, return list of ghosts
+    return ghostsWithDistance; 
     
   }
 
@@ -85,20 +86,20 @@ class Pacman extends Item implements GameBoardItem {
    * Find a safe direction given a list of threats and valid move directions
    * If no direction is safe, pick a random one
    * 
-   * @param {Array <ItemWithDistance>} imminentThreats 
+   * @param {Array <ItemWithDistance>} threats 
    * @param {Array<string>} validMoves 
    * @returns {string} // safe direction
    */
 
-  getSafeDir(imminentThreats: Array<ItemWithDistance>, validMoves: Array<string>, validLookDirs: Array<string>): string {
+  getSafeDir(threats: Array<ItemWithDistance>, validMoves: Array<string>, validLookDirs: Array<string>): string {
 
     const currDirection = GameDirectionToKeys(this.direction);
 
     // Sort threats by distance
-    imminentThreats.sort((threat1,threat2) => threat1.distance - threat2.distance );
+    threats.sort((threat1,threat2) => threat1.distance - threat2.distance );
 
     // Get a list of known safe directions (where we can see and there is no ghost)
-    let safeMoves = validLookDirs.filter( dir => !imminentThreats.some(threat => threat.direction === dir));
+    let safeMoves = validLookDirs.filter( dir => !threats.some(threat => threat.direction === dir));
 
     // If no known safe moves, consider doing a 180
 
@@ -110,8 +111,8 @@ class Pacman extends Item implements GameBoardItem {
     
     // Try to run away from threats, starting from the closest one
 
-    for(let i = 0; i < imminentThreats.length; i++){
-      let threat = imminentThreats[i];
+    for(let i = 0; i < threats.length; i++){
+      let threat = threats[i];
 
       let oppDir = GameDirectionReverseMap[threat.direction];
       
@@ -205,24 +206,14 @@ class Pacman extends Item implements GameBoardItem {
     }
     
     // Otherwise, find any threats
-    let imminentThreats = this.detectThreats(validLookDirs);
+    let threats = this.detectThreats(validLookDirs);
 
     // If any found within evasion radius, evade
-    if(imminentThreats.length > 0){
-
-      // if(this.pillTimer.timer > 0){ // If juiced...
-
-      //   let huntDir = this.huntGhosts(imminentThreats);
-
-      //   move = {piece: moves[huntDir], direction: GameDirectionMap[huntDir]}
-      //   return move; 
-
-      // } else{ // If not juiced, run away!
-
+    if(threats){
 
         // Find a direction to run
-        let safeDir = this.getSafeDir(imminentThreats, validMoves, validLookDirs);
-        // console.log(imminentThreats, safeDir);
+        let safeDir = this.getSafeDir(threats, validMoves, validLookDirs);
+        // console.log(threats, safeDir);
         
         move = {piece: moves[safeDir], direction: GameDirectionMap[safeDir]};
         // console.log("threat", move);
@@ -231,16 +222,17 @@ class Pacman extends Item implements GameBoardItem {
       
     }
 
+    // If no threats, go towards the nearest pellet or pill
     let closestPelletDir = this.findClosestPelletDir(validLookDirs); 
 
     if(closestPelletDir){
+
       move = { piece: moves[closestPelletDir], direction: GameDirectionMap[closestPelletDir] }
       // console.log("pellet",move);
       return move; 
     }
 
     // If no pellets or ghosts, go to default pattern
-
     const nextDir = this.getDefaultDir(validMoves);
 
     move = {piece: moves[nextDir], direction: GameDirectionMap[nextDir] }; 
