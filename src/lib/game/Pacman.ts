@@ -56,15 +56,10 @@ class Pacman extends Item implements GameBoardItem {
     if (itemsWithDistance.length === 0) return false;
     
     // Otherwise, get the closest one and return its direction 
-    let closestPellet = itemsWithDistance.reduce((prevItem,currItem) => {
-      if(currItem.distance < prevItem.distance){
-        return currItem;
-      } else{
-        return prevItem;
-      }
-    });
+    
+    itemsWithDistance.sort((a,b) => a.distance - b.distance);
 
-    return closestPellet.direction; 
+    return itemsWithDistance[0].direction; 
   }
 
   /**
@@ -75,13 +70,10 @@ class Pacman extends Item implements GameBoardItem {
    * @returns {Array<ItemWithDistance> | false} // All ghosts that are imminently threatening
    */
 
-  detectThreats(validLookDirs: Array<string>): Array<ItemWithDistance> | false {
+  detectThreats(validLookDirs: Array<string>): Array<ItemWithDistance>{
 
     // Find closest ghosts, if any
     const ghostsWithDistance: Array<ItemWithDistance> = this.findClosestItems(validLookDirs, [GameBoardItemType.GHOST]);
-
-    // Return false if none found
-    if(ghostsWithDistance.length === 0) return false;
 
     // Filter the ghosts that are too far away to be a threat
     const imminentThreats = ghostsWithDistance.filter( (ghost) => ghost.distance <= aiConstants.evasionRadius);
@@ -108,14 +100,15 @@ class Pacman extends Item implements GameBoardItem {
     imminentThreats.forEach((threat) => {
 
       let oppDir = GameDirectionReverseMap[threat.direction];
-
+      
       // If there is no ghost in the opposite direction, go that way
       if( !imminentThreats.some(threat => threat.direction === oppDir) && validMoves.includes(oppDir)){
 
         return oppDir;
-      }
+      } 
     })
 
+    console.log("redirect")
     // Otherwise, go a random way
     return sampleArray(validMoves); 
   }
@@ -152,25 +145,6 @@ class Pacman extends Item implements GameBoardItem {
 
     let move: GameBoardItemMove | false = false;
 
-    // // If there is a keyboard move, use it and clear it
-    // if (this.desiredMove) {    
-    //   if (moves[this.desiredMove]) {
-    //     move = {piece: moves[this.desiredMove], direction: GameDirectionMap[this.desiredMove]};
-    //     this.desiredMove = false;
-
-    //     return move; 
-    //   }
-    // }
-
-    
-    // // Otherwise, continue in the last direction
-    // if (!move && this.direction !== GameDirection.NONE) {
-    //   const key = GameDirectionToKeys(this.direction);
-    //   if (moves[key]) {
-    //     move = {piece: moves[key], direction: this.direction};
-    //   }
-    // }
-
     // Get the current direction in key format and use it to get the back direction
     const currentDir: string = GameDirectionToKeys(this.direction); 
     const backDir: string = GameDirectionReverseMap[currentDir];
@@ -183,11 +157,13 @@ class Pacman extends Item implements GameBoardItem {
     
     let imminentThreats = this.detectThreats(validLookDirs);
 
-    if(imminentThreats){
+    if(imminentThreats.length > 0){
 
       let safeDir = this.getSafeDir(imminentThreats, validMoves);
+      console.log(imminentThreats, safeDir);
+      move = {piece: moves[safeDir], direction: GameDirectionMap[safeDir]};
 
-      return {piece: moves[safeDir], direction: GameDirectionMap[safeDir]}
+      return move;
 
     }
 
@@ -198,15 +174,34 @@ class Pacman extends Item implements GameBoardItem {
       return move; 
     }
 
-    // Random movement
+    // If no pellets or ghosts, go to default pattern
 
-    const nextMove: Key = sampleArray(validMoves);
+    const nextDir = this.getDefaultDir(validMoves);
 
-    move = {piece: moves[nextMove], direction: GameDirectionMap[nextMove] }; 
+    move = {piece: moves[nextDir], direction: GameDirectionMap[nextDir] }; 
 
     return move;
 
   }
+
+  // // If there is a keyboard move, use it and clear it
+    // if (this.desiredMove) {    
+    //   if (moves[this.desiredMove]) {
+    //     move = {piece: moves[this.desiredMove], direction: GameDirectionMap[this.desiredMove]};
+    //     this.desiredMove = false;
+
+    //     return move; 
+    //   }
+    // }
+
+
+    // // Otherwise, continue in the last direction
+    // if (!move && this.direction !== GameDirection.NONE) {
+    //   const key = GameDirectionToKeys(this.direction);
+    //   if (moves[key]) {
+    //     move = {piece: moves[key], direction: this.direction};
+    //   }
+    // }
 
   
 
