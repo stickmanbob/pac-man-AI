@@ -95,6 +95,29 @@ class Item implements GameBoardItem {
     return false;
   }
 
+  findItemWithDistance(directionKey: string, typeToFind: GameBoardItemType): ItemWithDistance | false {
+
+    let currentPiece: GameBoardPiece = this.piece.moves[directionKey];
+    
+    let distance: number = 1;
+
+    // While there is not a wall in the way, keep looking forward for the item
+    while (typeof currentPiece !== 'undefined' && currentPiece.type !== GameBoardPieceType.WALL){
+      const item = this.items[currentPiece.y][currentPiece.x];
+
+      if (typeof item !== 'undefined') {
+        const { type } = item;
+        if (type === typeToFind) {
+          return {item: item, distance: distance, direction: directionKey};
+        }
+      }
+
+      currentPiece = currentPiece.moves[directionKey];
+      distance +=1;
+    }
+    return false;
+  }
+
   /** 
    * Standard way in which an item moves to a new piece
    * 

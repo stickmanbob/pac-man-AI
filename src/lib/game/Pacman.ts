@@ -1,4 +1,4 @@
-import { GameBoardItemType, KeyToGameDirection, GameDirectionMap, GameDirectionToKeys, GameDirection, pillMax, GameDirectionReverseMap } from '../Map';
+import { GameBoardItemType, KeyToGameDirection, GameDirectionMap, GameDirectionToKeys, GameDirection, pillMax, GameDirectionReverseMap, GameBoardPieceType } from '../Map';
 import Item from './Item';
 import { sampleArray } from '../../util/arrayUtil';
 import { Key } from 'react';
@@ -36,6 +36,22 @@ class Pacman extends Item implements GameBoardItem {
 
   }
 
+  /**
+   * Finds closest dot or power pellet and returns its direction
+   * 
+   * @method getClosestPellet
+   * @return {GameDirection}
+   */
+
+  getClosestPellet(validLookDirs: Array<Key>) :GameDirection{
+    
+    validLookDirs.forEach((dir: Key) => {
+
+      this.findItemWithDistance(dir,GameBoardItemType.BISCUIT)
+    })
+
+    return false;
+  }
   
   /**
    * Returns the next move from the keyboard input
@@ -67,19 +83,18 @@ class Pacman extends Item implements GameBoardItem {
     //   }
     // }
 
-    const currentDir = GameDirectionToKeys(this.direction); 
+    // Get the current direction in key format and use it to get the back direction
+    const currentDir: Key = GameDirectionToKeys(this.direction); 
+    const backDir: Key = GameDirectionReverseMap[currentDir];
 
-    const backDir = GameDirectionReverseMap[currentDir];
+    // Calculate the valid move directions availible and valid look directions
+    const validMoves: Array<Key> = Object.keys(moves)
 
-
-    const validMoves: Array<String> = Object.keys(moves)
-
-    const validLookDirs = validMoves.filter(dir => dir !== backDir);
+    // Valid directions to look are everywhere but behind PacMan
+    const validLookDirs: Array<Key> = validMoves.filter(dir => dir !== backDir);
     
-    console.log(`direction: ${this.direction} backDir: ${backDir} validLookDirs: ${validLookDirs}`); 
-
-    
-
+    //Testing
+    // console.log(`direction: ${this.direction} backDir: ${backDir} validLookDirs: ${validLookDirs}`); 
 
     // Find closest dot and go for it
 

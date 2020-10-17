@@ -1,6 +1,15 @@
+
+
 interface GameBoardItemMove {
   piece: GameBoardPiece,
   direction?: GameDirection
+}
+
+//Used to store a tuple with an item, distance, and direction from current tile
+interface ItemWithDistance {
+  item: GameBoardItem,
+  distance: number,
+  direction: string //direction key ('up', 'down', 'left', 'right')
 }
 
 interface GameBoardPosition {
