@@ -133,8 +133,8 @@ class Item implements GameBoardItem {
    * Each tuple contains the item, distance from start, and direction
    * 
    * @method findClosestItems
-   * @param directions 
-   * @param typesToFind 
+   * @param {Array<string>} directions 
+   * @param {Array<GameBoardItemType>} typesToFind 
    * @returns {Array<ItemWithDistance>} 
    */
   

@@ -122,8 +122,31 @@ class Pacman extends Item implements GameBoardItem {
       }
     }
 
-    // Otherwise, go a random way
+    // If no safe moves, go a random way
     return this.getDefaultDir(validMoves); 
+  }
+
+  /**
+   * Find the nerest ghost and move towards it!
+   * @method huntGhosts
+   * @param {Array<ItemWithDistance>} threats 
+   * @returns {string} //direction of ghost
+   */
+
+  huntGhosts(validLookDirs: Array<string>): string | false{
+
+    let ghosts = this.findClosestItems(validLookDirs, [GameBoardItemType.GHOST]);
+
+    // Only hunt ghosts that are within the configured radius
+    ghosts = ghosts.filter((ghost) => ghost.distance <= aiConstants.huntRadius);
+
+    if (ghosts.length === 0){
+      return false;
+    }
+
+    ghosts.sort((a,b) => a.distance - b.distance);
+
+    return ghosts[0].direction;
   }
 
  /**
@@ -167,21 +190,45 @@ class Pacman extends Item implements GameBoardItem {
 
     // Valid directions to look are everywhere but behind PacMan
     const validLookDirs: Array<string> = validMoves.filter(dir => dir !== backDir);
+
+    // If juiced, find prey:
+
+    if(this.pillTimer.timer > 0){
+
+      let ghostDir = this.huntGhosts(validLookDirs);
+
+      if(ghostDir){
+        move = { piece: moves[ghostDir], direction: GameDirectionMap[ghostDir] }
+        return move; 
+      }
+
+    }
     
-    // Find any threats
+    // Otherwise, find any threats
     let imminentThreats = this.detectThreats(validLookDirs);
 
     // If any found within evasion radius, evade
     if(imminentThreats.length > 0){
 
-      // Find a direction to run
-      let safeDir = this.getSafeDir(imminentThreats, validMoves, validLookDirs);
-      // console.log(imminentThreats, safeDir);
-      
-      move = {piece: moves[safeDir], direction: GameDirectionMap[safeDir]};
-      // console.log("threat", move);
-      return move;
+      // if(this.pillTimer.timer > 0){ // If juiced...
 
+      //   let huntDir = this.huntGhosts(imminentThreats);
+
+      //   move = {piece: moves[huntDir], direction: GameDirectionMap[huntDir]}
+      //   return move; 
+
+      // } else{ // If not juiced, run away!
+
+
+        // Find a direction to run
+        let safeDir = this.getSafeDir(imminentThreats, validMoves, validLookDirs);
+        // console.log(imminentThreats, safeDir);
+        
+        move = {piece: moves[safeDir], direction: GameDirectionMap[safeDir]};
+        // console.log("threat", move);
+        return move;
+        
+      
     }
 
     let closestPelletDir = this.findClosestPelletDir(validLookDirs); 
